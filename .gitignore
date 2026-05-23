@@ -1,0 +1,70 @@
+# ==============================================================================
+# .gitignore — STM32 CubeIDE (STM32F103 + FreeRTOS)
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# Build output
+# ------------------------------------------------------------------------------
+Debug/
+Release/
+build/
+
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# Archivos intermedios de compilación
+*.o
+*.d
+*.su          # stack usage report (XC genera algo similar, acá es GCC)
+*.a
+*.lib
+
+
+# ------------------------------------------------------------------------------
+# CubeIDE / Eclipse
+# ------------------------------------------------------------------------------
+
+# Configuración local del IDE (paths absolutos, workspace del developer)
+.project
+.cproject
+.settings/
+.launches/
+
+# Metadata de Eclipse que no aporta al repo
+.metadata/
+
+# Generado por CubeMX al abrir — no es parte del source
+STM32*.xml
+
+# Archivo de configuración del debugger ST-Link (paths locales)
+*.launch
+
+
+# ------------------------------------------------------------------------------
+# CubeMX
+# ------------------------------------------------------------------------------
+
+# El .ioc SÍ se versiona — es la fuente de verdad del pinout y clock
+# Solo ignorar el backup que genera CubeMX al guardar
+*.ioc.bak
+
+
+# ------------------------------------------------------------------------------
+# Archivos de sistema operativo
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# ------------------------------------------------------------------------------
+# Editores
+# ------------------------------------------------------------------------------
+*.swp
+*.swo
+*~
+.vscode/
