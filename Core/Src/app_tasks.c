@@ -61,6 +61,12 @@ void tasks_create(void)
 {
     BaseType_t status;
 
+     for(uint8_t i = 0; i < 8; i++)
+     {
+       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+       HAL_Delay(200);
+     }
+
     status = xTaskCreate(task_led,
                          "LED",
                          64,
@@ -69,9 +75,15 @@ void tasks_create(void)
                          &h_task_led);
     configASSERT(status == pdPASS);
 
+    for(uint8_t i = 0; i < 8; i++)
+             {
+          	 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+          	 HAL_Delay(500);
+             }
+
     status = xTaskCreate(task_oled,
                          "OLED",
-                         256,
+                         512,
                          NULL,
                          2,
                          &h_task_oled);
@@ -79,7 +91,7 @@ void tasks_create(void)
 
     status = xTaskCreate(task_uart_dbg,
                          "UART-DBG",
-                         128,
+                         256,
                          NULL,
                          2,
                          &h_task_uart_dbg);
@@ -87,7 +99,7 @@ void tasks_create(void)
 
     status = xTaskCreate(task_modbus,
                          "MODBUS",
-                         512,
+                         1024,
                          NULL,
                          3,
                          &h_task_modbus);

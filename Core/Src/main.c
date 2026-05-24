@@ -94,11 +94,25 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* Mutex UART — debe crearse antes que cualquier task */
-  g_uart_mutex = xSemaphoreCreateMutex();
-  configASSERT(g_uart_mutex != NULL);
+//  g_uart_mutex = xSemaphoreCreateMutex();
+//  configASSERT(g_uart_mutex != NULL);
+
+  for(uint8_t i = 0; i < 8; i++)
+       {
+    	 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    	 HAL_Delay(100);
+       }
+
+
 
   /* Creación de tasks — implementaciones en Core/Src/app_tasks.c */
   tasks_create();
+
+  for(uint8_t i = 0; i < 8; i++)
+         {
+      	 HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+      	 HAL_Delay(500);
+         }
 
   /* USER CODE END 2 */
 
