@@ -2,7 +2,17 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body — Modbus TCP base (STM32F103 + W5500)
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -12,10 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
-#include "app_tasks.h" 
+
+#include "fonts.h"
+#include "ssd1306.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,14 +49,12 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-SPI_HandleTypeDef hspi1;
-
 UART_HandleTypeDef huart2;
 
 osThreadId defaultTaskHandle;
 osThreadId Task1Handle;
 /* USER CODE BEGIN PV */
-SemaphoreHandle_t g_uart_mutex;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -51,15 +62,21 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_SPI1_Init(void);
 void StartDefaultTask(void const * argument);
 void task1_handler(void const * argument);
 
 /* USER CODE BEGIN PFP */
+static void task1_UART(void * parameters);
+static void task2_UART(void * parameters);
+static void task_LED(void * parameters);
+static void task_OLED(void * parameters);
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 /* USER CODE END 0 */
 
 /**
@@ -68,8 +85,14 @@ void task1_handler(void const * argument);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
+	TaskHandle_t task1_UART_hndl;
+	TaskHandle_t task2_UART_hndl;
+	TaskHandle_t task_LED_XD;
+	TaskHandle_t task_OLED_XD;
+
+	BaseType_t taskCreationStatus;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -78,59 +101,124 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_I2C1_Init();
-  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
-  /* Mutex UART — debe crearse antes que cualquier task */
-  g_uart_mutex = xSemaphoreCreateMutex();
-  configASSERT(g_uart_mutex != NULL);
+	SSD1306_Init();
+	char buffer[16];
 
-  /* Creación de tasks — implementaciones en Core/Src/app_tasks.c */
-  tasks_create();
+//	SSD1306_GotoXY (0,0);
+//	SSD1306_Puts ("MOR Y", &Font_11x18, SSD1306_COLOR_WHITE);
+//	SSD1306_GotoXY (0, 20);
+//	SSD1306_Puts ("YO XD", &Font_11x18, SSD1306_COLOR_WHITE);
+
+
+
+	SSD1306_GotoXY (0,0);
+	SSD1306_Puts ("MENU", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY (0, 20);
+	SSD1306_Puts ("(1) CONGRESO", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY (0, 40);
+	SSD1306_Puts ("(2) HARTONG", &Font_11x18, SSD1306_COLOR_WHITE);
+//	SSD1306_GotoXY (0, 6);
+//	SSD1306_Puts ("(1) CONGRESO", &Font_7x10, SSD1306_COLOR_WHITE);
+
+//	strcpy(buffer, "FOFO :)P");
+////	SSD1306_CenterXY(buffer, 1);
+//	SSD1306_GotoXY (100, 0);
+//	//sprintf(buffer, "%d", strlen(buffer));
+//	SSD1306_Puts (buffer, &Font_11x18, SSD1306_COLOR_WHITE);
+//	SSD1306_GotoXY (1, 20);
+//	SSD1306_Puts ("YO XD", &Font_11x18, SSD1306_COLOR_WHITE);
+
+//	SSD1306_DrawPixel(127, 5, SSD1306_COLOR_WHITE);
+//	printf("\nValue of x = %d", 127);
+//	SSD1306_UpdateScreen();
+//	HAL_Delay (2000);
+//
+//	unsigned int x;
+//
+//	for(x = 127; x >= 0; x--)
+//	{
+//		SSD1306_DrawPixel(x, 5, SSD1306_COLOR_WHITE);
+//		printf("\nValue of x = %u", x);
+//		SSD1306_UpdateScreen();
+//		HAL_Delay (200);
+//	}
+
+	SSD1306_UpdateScreen();
+	HAL_Delay (1000);
+
+//	SSD1306_ScrollRight(0,7);
+//	HAL_Delay(3000);
+//	SSD1306_ScrollLeft(0,7);
+//	HAL_Delay(3000);
+//	SSD1306_Stopscroll();
+//	SSD1306_Clear();
+//	SSD1306_GotoXY (35,0);
+//	SSD1306_Puts ("SCORE", &Font_7x10, 1);
 
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of Task1 */
-  osThreadDef(Task1, task1_handler, osPriorityIdle, 0, 128);
-  Task1Handle = osThreadCreate(osThread(Task1), NULL);
+//  osThreadDef(Task1, task1_handler, osPriorityIdle, 0, 128);
+//  Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
+    taskCreationStatus = xTaskCreate(task1_UART, "Task-1", 100, "Hello World task 1", 2, &task1_UART_hndl);
+
+    configASSERT(taskCreationStatus == pdPASS);
+
+    taskCreationStatus = xTaskCreate(task2_UART, "Task-2", 100, "Hello World task 2", 2, &task2_UART_hndl);
+
+    configASSERT(taskCreationStatus == pdPASS);
+
+    taskCreationStatus = xTaskCreate(task_LED, "Task-LED", 50, "LED Task", 3, &task_LED_XD);
+
+    configASSERT(taskCreationStatus == pdPASS);
+
+    taskCreationStatus = xTaskCreate(task_OLED, "OLED", 200, "OLED Task", 3, &task_OLED_XD);
+ 
+    configASSERT(taskCreationStatus == pdPASS);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-  osKernelStart();
-
+  vTaskStartScheduler();
   /* We should never get here as control is now taken by the scheduler */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -213,44 +301,6 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -291,9 +341,8 @@ static void MX_USART2_UART_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-
-  /* USER CODE END MX_GPIO_Init_1 */
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -310,21 +359,75 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 
-/**
-  * @brief Retarget printf → USART2
-  */
-int __io_putchar(int ch)
+static void task1_UART(void * parameters)
 {
+	while(1)
+	{
+		printf("%s\n", (char*)parameters);
+		vTaskDelay(100);
+	}
+}
+
+
+static void task2_UART(void * parameters)
+{
+	while(1)
+	{
+		printf("%s\n", (char*)parameters);
+		vTaskDelay(100);
+	}
+
+}
+
+static void task_LED(void * parameters)
+{
+
+	while(1)
+	{
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		vTaskDelay(500);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		vTaskDelay(500);
+	}
+
+}
+
+static void task_OLED(void * parameters)
+{
+
+//	vTaskSuspend(task_OLED);
+	while(1)
+	{
+		vTaskDelay(1000);
+//		SSD1306_ScrollRight(0,7);
+//		vTaskDelay(3000);
+//		SSD1306_ScrollLeft(0,7);
+//		vTaskDelay(3000);
+//		SSD1306_Stopscroll();
+	}
+
+}
+
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  * @param  None
+  * @retval None
+  */
+PUTCHAR_PROTOTYPE
+{
+  /* Place your implementation of fputc here */
+  /* e.g. write a character to the USART1 and Loop until the end of transmission */
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
+
   return ch;
 }
+
 
 /* USER CODE END 4 */
 
@@ -356,11 +459,15 @@ void StartDefaultTask(void const * argument)
 void task1_handler(void const * argument)
 {
   /* USER CODE BEGIN task1_handler */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+//  /* Infinite loop */
+//  for(;;)
+//  {
+//    osDelay(1);
+//    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+//    osDelay(500);
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+//	osDelay(500);
+//  }
   /* USER CODE END task1_handler */
 }
 
@@ -375,12 +482,13 @@ void task1_handler(void const * argument)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
+
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM4)
-  {
+  if (htim->Instance == TIM4) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+
   /* USER CODE END Callback 1 */
 }
 
@@ -391,8 +499,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1) {}
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -407,7 +518,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  (void)file; (void)line;
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
