@@ -61,37 +61,22 @@ void tasks_create(void)
 {
     BaseType_t status;
 
-    status = xTaskCreate(task_led,
-                         "LED",
-                         64,
-                         NULL,
-                         1,
-                         &h_task_led);
-    configASSERT(status == pdPASS);
 
-    status = xTaskCreate(task_oled,
-                         "OLED",
-                         256,
-                         NULL,
-                         2,
-                         &h_task_oled);
-    configASSERT(status == pdPASS);
+    status = xTaskCreate(task_led, "LED", 64, NULL, 1, &h_task_led);
 
-    status = xTaskCreate(task_uart_dbg,
-                         "UART-DBG",
-                         128,
-                         NULL,
-                         2,
-                         &h_task_uart_dbg);
-    configASSERT(status == pdPASS);
+	configASSERT(status == pdPASS);
 
-    status = xTaskCreate(task_modbus,
-                         "MODBUS",
-                         512,
-                         NULL,
-                         3,
-                         &h_task_modbus);
-    configASSERT(status == pdPASS);
+	status = xTaskCreate(task_oled, "OLED", 256, NULL, 2, &h_task_oled);
+
+	configASSERT(status == pdPASS);
+
+//	status = xTaskCreate(task_uart_dbg, "UART-DBG", 512, NULL, 2, &h_task_uart_dbg);
+//
+//	configASSERT(status == pdPASS);
+	//
+	//	status = xTaskCreate(task_modbus, "MODBUS", 1024, NULL, 2, &h_task_modbus);
+	//
+	//	configASSERT(status == pdPASS);
 }
 
 /* ---------------------------------------------------------------------------
@@ -132,20 +117,30 @@ static void task_oled(void *pvParameters)
 
     SSD1306_Init();
 
+    SSD1306_GotoXY (0,0);
+	SSD1306_Puts ("MENU", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY (0, 20);
+	SSD1306_Puts ("(1) CONGRESO", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY (0, 40);
+	SSD1306_Puts ("(2) HARTONG", &Font_11x18, SSD1306_COLOR_WHITE);
+
+	SSD1306_UpdateScreen();
+	vTaskDelay(pdMS_TO_TICKS(1000));
+
     while (1)
     {
         SSD1306_Clear();
 
         SSD1306_GotoXY(0, 0);
-        SSD1306_Puts("Modbus TCP", &Font_7x10, SSD1306_COLOR_WHITE);
+        SSD1306_Puts("Modbus TCP", &Font_11x18, SSD1306_COLOR_WHITE);
 
-        SSD1306_GotoXY(0, 12);
+        SSD1306_GotoXY(0, 20);
         snprintf(buf, sizeof(buf), "up: %lu s", uptime_s);
-        SSD1306_Puts(buf, &Font_7x10, SSD1306_COLOR_WHITE);
+        SSD1306_Puts(buf, &Font_11x18, SSD1306_COLOR_WHITE);
 
         /* Líneas 24 y 36 reservadas para estado W5500 / Modbus */
-        SSD1306_GotoXY(0, 24);
-        SSD1306_Puts("W5500: --", &Font_7x10, SSD1306_COLOR_WHITE);
+        SSD1306_GotoXY(0, 40);
+        SSD1306_Puts("W5500: --", &Font_11x18, SSD1306_COLOR_WHITE);
 
         SSD1306_UpdateScreen();
 
@@ -197,7 +192,7 @@ static void task_modbus(void *pvParameters)
 {
     (void)pvParameters;
 
-    LOG("[MODBUS] task arrancada\r\n");
+//    LOG("[MODBUS] task arrancada\r\n");
 
     /* Init W5500: SPI + reset + red estática */
 //    w5500_port_init();
@@ -214,4 +209,15 @@ static void task_modbus(void *pvParameters)
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+}
+
+
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    // Si llegás acá, pcTaskName te dice cuál task se quedó sin stack
+    (void)xTask;
+    (void)pcTaskName;
+    __disable_irq();
+    while(1){}
 }

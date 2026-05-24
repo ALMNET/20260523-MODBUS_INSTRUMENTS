@@ -54,4 +54,7 @@ extern SemaphoreHandle_t g_uart_mutex;
   */
 void tasks_create(void);
 
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
+
+
 #endif /* APP_TASKS_H */
