@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define CS_GPIO_Port GPIOA
 #define RST_Pin GPIO_PIN_0
 #define RST_GPIO_Port GPIOB
+#define RS485_DE_Pin GPIO_PIN_8
+#define RS485_DE_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

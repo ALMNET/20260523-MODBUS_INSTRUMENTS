@@ -148,7 +148,7 @@
             {
               "type": "c_linker",
               "options": {
-                      "option.script": "-T\"D:/Armando/OneDrive/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
+                      "option.script": "-T\"D:/OneDrive - Proion/Documents/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
                       "option.systemcalls": "--specs=nosys.specs",
                       "option.map": "-Wl,-Map=\"20260523-MODBUS_TCP.map\"",
                       "option.gcsections": "-Wl,--gc-sections",
@@ -161,7 +161,7 @@
                   "-mthumb",
                   "--specs=nano.specs",
                   "-mcpu=cortex-m3",
-                  "-T\"D:/Armando/OneDrive/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
+                  "-T\"D:/OneDrive - Proion/Documents/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
                   "--specs=nosys.specs",
                   "-Wl,-Map=\"20260523-MODBUS_TCP.map\"",
                   "-Wl,--gc-sections",
@@ -339,7 +339,7 @@
             {
               "type": "c_linker",
               "options": {
-                      "option.script": "-T\"D:/Armando/OneDrive/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
+                      "option.script": "-T\"D:/OneDrive - Proion/Documents/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
                       "option.systemcalls": "--specs=nosys.specs",
                       "option.map": "-Wl,-Map=\"20260523-MODBUS_TCP.map\"",
                       "option.gcsections": "-Wl,--gc-sections",
@@ -352,7 +352,7 @@
                   "-mthumb",
                   "--specs=nano.specs",
                   "-mcpu=cortex-m3",
-                  "-T\"D:/Armando/OneDrive/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
+                  "-T\"D:/OneDrive - Proion/Documents/PROJECTS/STM32Cube/20260523-MODBUS_TCP/STM32F103C8TX_FLASH.ld\"",
                   "--specs=nosys.specs",
                   "-Wl,-Map=\"20260523-MODBUS_TCP.map\"",
                   "-Wl,--gc-sections",
