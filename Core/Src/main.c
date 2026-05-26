@@ -37,6 +37,8 @@
 /* Tu port layer */
 #include "w5500_port.h"     // w5500_port_init
 
+#include "modbus_crc.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
