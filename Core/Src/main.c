@@ -38,6 +38,8 @@
 #include "w5500_port.h"     // w5500_port_init
 
 #include "modbus_crc.h"
+#include "modbus_registers.h"
+#include "modbus_uart.h"
 
 /* USER CODE END Includes */
 
@@ -66,7 +68,6 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 osThreadId defaultTaskHandle;
-osThreadId Task1Handle;
 /* USER CODE BEGIN PV */
 SemaphoreHandle_t g_uart_mutex;
 /* USER CODE END PV */
@@ -80,7 +81,6 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void const * argument);
-void task1_handler(void const * argument);
 
 /* USER CODE BEGIN PFP */
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
@@ -204,10 +204,6 @@ int main(void)
   /* definition and creation of defaultTask */
 //  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
 //  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
-  /* definition and creation of Task1 */
-//  osThreadDef(Task1, task1_handler, osPriorityIdle, 0, 128);
-//  Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   tasks_create();
@@ -520,28 +516,6 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_task1_handler */
-/**
-* @brief Function implementing the Task1 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_task1_handler */
-void task1_handler(void const * argument)
-{
-  /* USER CODE BEGIN task1_handler */
-//  /* Infinite loop */
-//  for(;;)
-//  {
-//    osDelay(1);
-//    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-//    osDelay(500);
-//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-//	osDelay(500);
-//  }
-  /* USER CODE END task1_handler */
 }
 
 /**
