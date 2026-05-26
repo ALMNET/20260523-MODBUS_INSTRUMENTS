@@ -30,6 +30,13 @@
 #include "fonts.h"
 #include "ssd1306.h"
 
+/* ioLibrary — Ethernet core */
+#include "wizchip_conf.h"   // ctlwizchip, ctlnetwork
+#include "socket.h"         // socket, listen, recv, send, close, getSn_SR, getSn_RX_RSR
+
+/* Tu port layer */
+#include "w5500_port.h"     // w5500_port_init
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,10 +77,6 @@ void StartDefaultTask(void const * argument);
 void task1_handler(void const * argument);
 
 /* USER CODE BEGIN PFP */
-static void task1_UART(void * parameters);
-static void task2_UART(void * parameters);
-static void task_LED(void * parameters);
-static void task_OLED(void * parameters);
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 
 /* USER CODE END PFP */
@@ -91,12 +94,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	TaskHandle_t task1_UART_hndl;
-	TaskHandle_t task2_UART_hndl;
-	TaskHandle_t task_LED_XD;
-	TaskHandle_t task_OLED_XD;
 
-	BaseType_t taskCreationStatus;
 
   /* USER CODE END 1 */
 
@@ -123,8 +121,40 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
-	SSD1306_Init();
-	char buffer[16];
+  for(uint8_t i = 1; i <= 10; i++)
+  {
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	  HAL_Delay(100);
+  }
+
+//  w5500_port_init();
+//
+//
+//
+//  // En main(), después de w5500_port_init()
+//  uint8_t ver;
+//  ctlwizchip(CW_GET_VER, &ver);
+//  if(ver != 0x04) Error_Handler();  // chip no responde
+//
+//  socket(0, Sn_MR_TCP, 502, 0);
+//  listen(0);
+
+//  while(1)
+//  {
+//      if(getSn_SR(0) == SOCK_ESTABLISHED)
+//      {
+//          uint16_t len = getSn_RX_RSR(0);  // bytes disponibles
+//          if(len > 0)
+//          {
+//              uint8_t buf[128];
+//              recv(0, buf, len);
+//              // acá va el parseo Modbus — por ahora solo eco
+//              send(0, buf, len);
+//          }
+//      }
+//      HAL_Delay(10);
+//  }
+
 
 
 
@@ -157,11 +187,11 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
 	tasks_create();
+
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
   vTaskStartScheduler();
-  //osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -437,9 +467,11 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
+//  __disable_irq();
   while (1)
   {
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	  HAL_Delay(50);
   }
   /* USER CODE END Error_Handler_Debug */
 }
