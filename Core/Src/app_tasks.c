@@ -21,6 +21,7 @@
 #include "fonts.h"
 #include "ssd1306.h"
 #include "w5500_port.h"
+#include "modbus_rtu.h"
 
 /* ---------------------------------------------------------------------------
  * Handles (definidos acá, declarados extern en app_tasks.h)
@@ -36,7 +37,7 @@ TaskHandle_t h_task_modbus   = NULL;
 static void task_led      (void *pvParameters);
 static void task_oled     (void *pvParameters);
 static void task_uart_dbg (void *pvParameters);
-static void task_modbus   (void *pvParameters);
+static void task_modbus_tcp   (void *pvParameters);
 
 /* ---------------------------------------------------------------------------
  * tasks_create()
@@ -69,6 +70,28 @@ void tasks_create(void)
 	status = xTaskCreate(task_oled, "OLED", 256, NULL, 2, &h_task_oled);
 
 	configASSERT(status == pdPASS);
+
+	/* --- Task Modbus RTU Slave ------------------------------------------- */
+	    /*
+	     * Stack: 256 words (1024 bytes en Cortex-M3).
+	     *   - modbus_rtu_task usa ~200 bytes de stack local (rx_frame + variables)
+	     *   - 256 words da margen cómodo para el call stack de HAL_UART_Transmit
+	     *
+	     * Prioridad: 3 (por encima de osPriorityNormal=2, por debajo de tareas críticas)
+	     *   - Debe responder en <500 ms al master (típicamente <100 ms esperado)
+	     *   - Prioridad más alta que tasks de display o logging
+	     *
+	     * El handle se guarda solo si necesitás suspenderla/resumirla desde afuera.
+	     * Por ahora NULL es suficiente.
+	     */
+	status = xTaskCreate(
+	        modbus_rtu_task,    /* función de la task                    */
+	        "ModbusRTU",        /* nombre para el debugger               */
+	        256,                /* stack en words (256 × 4 = 1024 bytes) */
+	        NULL,               /* argumento — no usado                  */
+	        3,                  /* prioridad                             */
+	        NULL                /* handle de salida — no necesario       */
+	    );
 
 //	status = xTaskCreate(task_uart_dbg, "UART-DBG", 512, NULL, 2, &h_task_uart_dbg);
 //
@@ -188,7 +211,7 @@ static void task_uart_dbg(void *pvParameters)
   * TODO: implementar FC03 (Read Holding Registers)
   * TODO: implementar FC06 (Write Single Register)
   */
-static void task_modbus(void *pvParameters)
+static void task_modbus_tcp(void *pvParameters)
 {
     (void)pvParameters;
 

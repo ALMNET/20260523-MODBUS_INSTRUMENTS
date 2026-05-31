@@ -40,6 +40,7 @@
 #include "modbus_crc.h"
 #include "modbus_registers.h"
 #include "modbus_uart.h"
+#include "spfd5408.h"
 
 /* USER CODE END Includes */
 
