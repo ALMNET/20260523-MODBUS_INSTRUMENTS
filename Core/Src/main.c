@@ -130,23 +130,21 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);    // CS inactivo
-  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);  // RST inactivo
 
-//  for(uint8_t i = 1; i <= 10; i++)
-//  {
-//	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-//	  HAL_Delay(100);
-//  }
+
+  for(uint8_t i = 1; i <= 10; i++)
+  {
+	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	  HAL_Delay(100);
+  }
+
+  HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
 
   w5500_port_init();
 
-
-
-  // En main(), después de w5500_port_init()
-//  uint16_t ver = 0;
-//  ctlwizchip(CW_GET_VER, &ver);
   uint8_t ver = getVERSIONR();
+  if(ver != 0x04) Error_Handler();
 
   // Parpadeá ver veces para ver qué valor devuelve
   for(uint8_t i = 0; i < ver; i++)
@@ -156,13 +154,9 @@ int main(void)
       HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
       HAL_Delay(300);
   }
+
   HAL_Delay(2000);  // pausa para distinguir el resultado
 
-
-//  if(ver != 0x04) Error_Handler();  // chip no responde
-//
-//  socket(0, Sn_MR_TCP, 502, 0);
-//  listen(0);
 //
 //  while(1)
 //  {
@@ -212,7 +206,6 @@ int main(void)
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
-//  osKernelStart();
   vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
@@ -324,7 +317,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

@@ -20,6 +20,10 @@
 #include "app_tasks.h"
 #include "fonts.h"
 #include "ssd1306.h"
+
+/* ioLibrary — Ethernet core */
+#include "wizchip_conf.h"   // ctlwizchip, ctlnetwork
+#include "socket.h"         // socket, listen, recv, send, close, getSn_SR, getSn_RX_RSR
 #include "w5500_port.h"
 #include "modbus_rtu.h"
 
@@ -71,6 +75,10 @@ void tasks_create(void)
 
 	configASSERT(status == pdPASS);
 
+	status = xTaskCreate(task_modbus_tcp, "MODBUS", 1024, NULL, 2, &h_task_modbus);
+
+	configASSERT(status == pdPASS);
+
 	/* --- Task Modbus RTU Slave ------------------------------------------- */
 	    /*
 	     * Stack: 256 words (1024 bytes en Cortex-M3).
@@ -84,22 +92,18 @@ void tasks_create(void)
 	     * El handle se guarda solo si necesitás suspenderla/resumirla desde afuera.
 	     * Por ahora NULL es suficiente.
 	     */
-	status = xTaskCreate(
-	        modbus_rtu_task,    /* función de la task                    */
-	        "ModbusRTU",        /* nombre para el debugger               */
-	        256,                /* stack en words (256 × 4 = 1024 bytes) */
-	        NULL,               /* argumento — no usado                  */
-	        3,                  /* prioridad                             */
-	        NULL                /* handle de salida — no necesario       */
-	    );
+//	status = xTaskCreate(
+//	        modbus_rtu_task,    /* función de la task                    */
+//	        "ModbusRTU",        /* nombre para el debugger               */
+//	        256,                /* stack en words (256 × 4 = 1024 bytes) */
+//	        NULL,               /* argumento — no usado                  */
+//	        3,                  /* prioridad                             */
+//	        NULL                /* handle de salida — no necesario       */
+//	    );
 
 //	status = xTaskCreate(task_uart_dbg, "UART-DBG", 512, NULL, 2, &h_task_uart_dbg);
 //
 //	configASSERT(status == pdPASS);
-	//
-	//	status = xTaskCreate(task_modbus, "MODBUS", 1024, NULL, 2, &h_task_modbus);
-	//
-	//	configASSERT(status == pdPASS);
 }
 
 /* ---------------------------------------------------------------------------
@@ -216,9 +220,6 @@ static void task_modbus_tcp(void *pvParameters)
     (void)pvParameters;
 
 //    LOG("[MODBUS] task arrancada\r\n");
-
-    /* Init W5500: SPI + reset + red estática */
-//    w5500_port_init();
 //    LOG("[MODBUS] W5500 init OK — IP 192.168.1.100\r\n");
 
     /*
@@ -227,6 +228,9 @@ static void task_modbus_tcp(void *pvParameters)
      *   listen(0);
      *   loop: recv → modbus_process → send
      */
+
+    socket(0, Sn_MR_TCP, 502, 0);
+    listen(0);
 
     while (1)
     {

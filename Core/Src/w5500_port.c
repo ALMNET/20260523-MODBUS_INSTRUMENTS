@@ -98,9 +98,9 @@ void w5500_port_init(void)
      *    Ajustar según tu LAN. MAC debe ser único en la red. */
     wiz_NetInfo netinfo = {
         .mac  = { 0x00, 0x08, 0xDC, 0xAB, 0xCD, 0xEF },  /* WIZnet OUI + bytes arbitrarios */
-        .ip   = { 192, 168, 1, 100 },
+        .ip   = { 192, 168, 100, 100 },
         .sn   = { 255, 255, 255, 0 },
-        .gw   = { 192, 168, 1, 1 },
+        .gw   = { 192, 168, 100, 1 },
         .dns  = { 8, 8, 8, 8 },
         .dhcp = NETINFO_STATIC
     };

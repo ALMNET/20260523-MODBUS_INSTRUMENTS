@@ -20,7 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_it.h"
-#include "modbus_uart.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -201,7 +200,9 @@ void USART1_IRQHandler(void)
    * porque HAL limpia algunos flags en su propio handler y nos quedaríamos
    * sin poder detectar el IDLE correctamente si lo llamamos después.
    */
-  modbus_uart_idle_callback();
+
+#warning "Descomentar la funcion modbus_uart_idle_callback(); para manejar el Modbus RTU y arreglar problemas de compilacion"
+//  modbus_uart_idle_callback();
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
