@@ -1,0 +1,27 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c"
+    },
+
+    "editor.formatOnSave": false,
+
+    "C_Cpp.errorSquiggles": "enabled",
+
+    "C_Cpp.intelliSenseEngine": "default",
+    "cmake.cmakePath": "cube-cmake",
+    "cmake.configureArgs": [
+        "-DCMAKE_COMMAND=cube-cmake"
+    ],
+    "cmake.preferredGenerators": [
+        "Ninja"
+    ],
+    "stm32cube-ide-clangd.path": "cube",
+    "stm32cube-ide-clangd.arguments": [
+        "starm-clangd",
+        "--query-driver=C:/ST/STM32CubeIDE_2.1.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.14.3.rel1.win32_1.0.100.202602081740/tools/bin/arm-none-eabi-gcc*",
+        "--query-driver=C:/ST/STM32CubeIDE_2.1.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.14.3.rel1.win32_1.0.100.202602081740/tools/bin/arm-none-eabi-g++*"
+    ]
+}

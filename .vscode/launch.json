@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "STM32 Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/Debug/20260523-MODBUS_TCP.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+
+            "servertype": "stlink",
+
+            "device": "STM32F103C8T6",
+            "interface": "swd",
+
+            "runToEntryPoint": "main",
+
+            "svdFile": "STM32F103.svd"
+        }
+    ]
+}

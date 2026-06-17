@@ -7,8 +7,15 @@
 # Build output
 # ------------------------------------------------------------------------------
 Debug/
+debug/
 Release/
+release
+Build/
 build/
+
+# ------------------------------------------------------------------------------
+# Binaries
+# ------------------------------------------------------------------------------
 
 *.elf
 *.bin
@@ -16,45 +23,81 @@ build/
 *.map
 *.lst
 
-# Archivos intermedios de compilación
+
+# ------------------------------------------------------------------------------
+# Libraries and compile time files
+# ------------------------------------------------------------------------------
+
 *.o
 *.d
-*.su          # stack usage report (XC genera algo similar, acá es GCC)
+*.su          # stack usage report (Similar to XC generated, Here is GCC)
 *.a
 *.lib
+
+
+# ------------------------------------------------------------------------------
+# Linker output
+# ------------------------------------------------------------------------------
+
+*.ilk
+*.map
+*.exp
+
+
+
+# ------------------------------------------------------------------------------
+# Shared objects
+# ------------------------------------------------------------------------------
+
+*.dll
+*.so
+*.so.*
+*.dylib
+
+
+# ------------------------------------------------------------------------------
+# Executables
+# ------------------------------------------------------------------------------
+
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.bin
 
 
 # ------------------------------------------------------------------------------
 # CubeIDE / Eclipse
 # ------------------------------------------------------------------------------
 
-# Configuración local del IDE (paths absolutos, workspace del developer)
-.project
-.cproject
+# Local config on IDE (absolute paths, workspace of the developer)
+#.project
+#.cproject
 .settings/
-.launches/
+#.launches/
 
-# Metadata de Eclipse que no aporta al repo
+# Eclipse metadata (workspace, project settings, etc.) — not needed in the repo
 .metadata/
 
-# Generado por CubeMX al abrir — no es parte del source
+# Auto generated files by CubeMX (project configuration, pinout, etc.) — not needed in the repo
 STM32*.xml
 
-# Archivo de configuración del debugger ST-Link (paths locales)
-*.launch
+# Debugger Configuration files (ST-Link, J-Link, etc.) — not needed in the repo
+#*.launch
 
 
 # ------------------------------------------------------------------------------
 # CubeMX
 # ------------------------------------------------------------------------------
 
-# El .ioc SÍ se versiona — es la fuente de verdad del pinout y clock
-# Solo ignorar el backup que genera CubeMX al guardar
+# Just ignore the IOC backup files, they are not needed in the repo
 *.ioc.bak
 
 
 # ------------------------------------------------------------------------------
-# Archivos de sistema operativo
+# Operating system files
 # ------------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
@@ -62,9 +105,18 @@ desktop.ini
 
 
 # ------------------------------------------------------------------------------
-# Editores
+# Code Editors
 # ------------------------------------------------------------------------------
 *.swp
 *.swo
 *~
-.vscode/
+#.vscode/
+
+
+# ------------------------------------------------------------------------------
+# Debug Files
+# ------------------------------------------------------------------------------
+*.dSYM/
+*.su
+*.idb
+*.pdb
