@@ -1,31 +1,17 @@
 /**
- * @file    modbus_rtu.c
- * @brief   Implementación del core Modbus RTU Slave.
+ * @file    modbus_rtu.c (UPDATED)
+ * @brief   Modbus RTU Slave — with frame counters and handler integration.
  *
- * @details Diagrama de flujo de modbus_rtu_process():
+ * @details Updated to use modbus_handler for diagnostics and counters.
  *
- * @verbatim
- *  frame[] recibido
- *       │
- *       ├─ length < MB_RTU_FRAME_MIN ──► IGNORED
- *       │
- *       ├─ frame[0] != MB_SLAVE_ADDRESS ──► IGNORED  (broadcast o distinto)
- *       │
- *       ├─ CRC inválido ──► ERR_CRC  (sin respuesta — spec Modbus §3.6)
- *       │
- *       └─ despachar por FC
- *             ├─ FC03 ──► handle_fc03() ──► respuesta normal o excepción
- *             ├─ FC06 ──► handle_fc06() ──► respuesta normal o excepción
- *             └─ otro  ──► excepción 0x01 (Illegal Function)
- * @endverbatim
- *
- * @author  Armando
- * @date    2025
+ * @author  ALMNET
+ * @date    2026
  */
 
 #include "modbus_rtu.h"
 #include "modbus_crc.h"
 #include "modbus_registers.h"
+#include "modbus_handler.h"
 #include "modbus_uart.h"
 
 #include "FreeRTOS.h"
@@ -34,13 +20,13 @@
 #include <string.h>
 
 /* ========================================================================== */
-/*  Buffer de TX (estático, reutilizado en cada respuesta)                     */
+/*  Buffer de TX (estático, reutilizado en cada respuesta)                   */
 /* ========================================================================== */
 
 static uint8_t tx_buf[MB_TX_BUF_SIZE];
 
 /* ========================================================================== */
-/*  Helpers privados                                                            */
+/*  Helpers privados                                                          */
 /* ========================================================================== */
 
 /**
@@ -58,6 +44,8 @@ static void send_exception(uint8_t fc, uint8_t ex_code)
     tx_buf[2] = ex_code;
     size_t len = modbus_crc_append(tx_buf, 3U);
     modbus_uart_transmit(tx_buf, len);
+    modbus_handler_inc_rtu_tx();
+    modbus_handler_inc_errors();
 }
 
 /**
@@ -100,8 +88,8 @@ static int handle_fc03(const uint8_t *frame, size_t length)
 
     /* Leer registros en buffer temporal */
     uint16_t reg_values[MODBUS_HR_COUNT];
-    int ret = modbus_hr_read_block(start_addr, reg_count, reg_values);
-    if (ret != MB_REG_OK)
+    int ret = modbus_handler_read_block(start_addr, reg_count, reg_values);
+    if (ret != 0)
     {
         send_exception(MB_FC_READ_HOLDING_REGS, MB_EX_SERVER_DEVICE_FAILURE);
         return MB_RTU_ERR_EXCEPTION;
@@ -126,6 +114,7 @@ static int handle_fc03(const uint8_t *frame, size_t length)
     size_t pdu_len = 3U + byte_count;
     size_t total   = modbus_crc_append(tx_buf, pdu_len);
     modbus_uart_transmit(tx_buf, total);
+    modbus_handler_inc_rtu_tx();
 
     return MB_RTU_OK;
 }
@@ -162,8 +151,8 @@ static int handle_fc06(const uint8_t *frame, size_t length)
     }
 
     /* Escribir el registro */
-    int ret = modbus_hr_write(reg_addr, value);
-    if (ret != MB_REG_OK)
+    int ret = modbus_handler_write_register(reg_addr, value);
+    if (ret != 0)
     {
         send_exception(MB_FC_WRITE_SINGLE_REG, MB_EX_SERVER_DEVICE_FAILURE);
         return MB_RTU_ERR_EXCEPTION;
@@ -175,22 +164,23 @@ static int handle_fc06(const uint8_t *frame, size_t length)
      */
     memcpy(tx_buf, frame, MB_FC06_REQ_LEN);
     modbus_uart_transmit(tx_buf, MB_FC06_REQ_LEN);
+    modbus_handler_inc_rtu_tx();
 
     return MB_RTU_OK;
 }
 
 /* ========================================================================== */
-/*  Implementación pública                                                      */
+/*  Implementación pública                                                    */
 /* ========================================================================== */
 
 int modbus_rtu_init(TaskHandle_t modbus_task)
 {
     int ret = modbus_registers_init();
-    if (ret != MB_REG_OK)
+    if (ret != 0)
         return ret;
 
     ret = modbus_uart_init(modbus_task);
-    if (ret != MB_UART_OK)
+    if (ret != 0)
         return ret;
 
     return MB_RTU_OK;
@@ -211,10 +201,14 @@ int modbus_rtu_process(const uint8_t *frame, size_t length)
 
     /* 3 — Validar CRC */
     if (!modbus_crc_check(frame, length))
+    {
+        modbus_handler_inc_errors();
         return MB_RTU_ERR_CRC;
+    }
 
     /* 4 — Despachar por function code */
     uint8_t fc = frame[1];
+    modbus_handler_inc_rtu_rx();
 
     switch (fc)
     {
@@ -249,7 +243,7 @@ void modbus_rtu_task(void *argument)
     static uint8_t rx_frame[MB_UART_RX_BUF_SIZE];
     size_t rx_len = 0;
 
-    for (;;)
+    while (1)
     {
         /*
          * Esperar notificación de la ISR IDLE.
@@ -263,7 +257,7 @@ void modbus_rtu_task(void *argument)
         /* Copiar frame del buffer DMA a nuestro buffer local */
         ret = modbus_uart_get_frame(rx_frame, sizeof(rx_frame), &rx_len);
 
-        if (ret != MB_UART_OK || rx_len == 0U)
+        if (ret != 0 || rx_len == 0U)
             continue;   /* buffer overflow o frame vacío — descartar */
 
         /* Procesar el frame: validar, ejecutar FC, responder */
